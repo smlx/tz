@@ -43,3 +43,7 @@ tz meeting Zürich Bangalore Tokyo
 ```
 
 This feature is inspired by [this web interface](https://www.timeanddate.com/worldclock/meetingtime.html).
+
+## Acknowledgments
+
+The cities timezone data comes from [GeoNames](https://www.geonames.org) and is licensed under the [Creative Commons Attribution 4.0 License](https://creativecommons.org/licenses/by/4.0/).
