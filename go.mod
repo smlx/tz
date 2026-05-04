@@ -1,6 +1,6 @@
 module github.com/smlx/tz
 
-go 1.22.2
+go 1.25.0
 
 require (
 	github.com/alecthomas/assert/v2 v2.11.0
