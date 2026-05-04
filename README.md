@@ -1,136 +1,45 @@
-# Go CLI GitHub
+# tz
 
-[![Go Reference](https://pkg.go.dev/badge/github.com/smlx/go-cli-github.svg)](https://pkg.go.dev/github.com/smlx/go-cli-github)
-[![Release](https://github.com/smlx/go-cli-github/actions/workflows/release.yaml/badge.svg)](https://github.com/smlx/go-cli-github/actions/workflows/release.yaml)
-[![coverage](https://raw.githubusercontent.com/smlx/go-cli-github/badges/.badges/main/coverage.svg)](https://github.com/smlx/go-cli-github/actions/workflows/coverage.yaml)
-[![Go Report Card](https://goreportcard.com/badge/github.com/smlx/go-cli-github)](https://goreportcard.com/report/github.com/smlx/go-cli-github)
-[![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/smlx/go-cli-github/badge)](https://securityscorecards.dev/viewer/?uri=github.com/smlx/go-cli-github)
-[![OpenSSF Best Practices](https://www.bestpractices.dev/projects/8168/badge)](https://www.bestpractices.dev/projects/8168)
-
-This repository is a template for a Go CLI tool or service.
-It is quite opinionated about security and release engineering, but hopefully in a good way.
-
-It comes pre-configured for integration with GitHub-specific features such as [Dependabot security tooling](https://docs.github.com/en/code-security/dependabot), [CodeQL](https://codeql.github.com/), and [branch protection](https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/managing-protected-branches/about-protected-branches).
-It also automatically builds and tests your code using [GitHub Actions](https://docs.github.com/en/actions).
+`tz` is a timezone conversion tool.
 
 ## Features
 
-* Use [GoReleaser](https://goreleaser.com/) to automatically build and create GitHub Releases and container images on merge to `main`.
+Location names are fuzzy matched. So e.g. you can write "Zurich" or "Zürich".
 
-    * This uses the [Conventional Commits Versioner](https://github.com/smlx/ccv) to automatically version each release.
+### Convert
 
-* Lint your commit messages, Go code, GitHub Actions, and Dockerfiles.
-* Test Pull Requests using `go test`.
-* Build container images from Pull Requests and push them to the GitHub container registry for manual testing and review.
-* Static code analysis using [CodeQL](https://codeql.github.com/) and [Go Report Card](https://goreportcard.com/).
-* Coverage analysis using the [go-test-coverage action](https://github.com/vladopajic/go-test-coverage).
-* Security analysis using [OpenSSF](https://securityscorecards.dev).
-* Signed binary and container release artifacts using [artifact attestations](https://docs.github.com/en/actions/security-guides/using-artifact-attestations-to-establish-provenance-for-builds).
-* SBOM generation for both release artifacts and container images, with image SBOMs pushed to the container registry.
+Convert from one timezone to another.
 
-## How to use
+Examples:
 
-First set up the GitHub repo
+```bash
+# print the current time and timezone in Zürich
+tz convert Zurich
+# print the time and timezone in Zürich when it is 5am local time (the next time it is 5am local time)
+tz convert Zurich @ 5am
+# print the time and timezone in Zürich when it is 5am in Sydney (the next time it is 5am in Sydney)
+tz convert Zurich Sydney 5am
+# print the time and timezone in Tokyo when it is 5am on Friday in Bangalore (the next time it is 5am on Friday in Bangalore)
+tz convert Tokyo Bangalore 5am friday
+# print the time and timezone local time when it is 5am in Zürich (the next time it is 5am in Zürich)
+tz convert @ Zurich 5am
+```
 
-1. Create a new empty GitHub repository.
+The logic is:
+* `@` means "local time"
+* the CLI structure is `tz convert [TARGET] [SOURCE] [TIME SPECIFICATION]
+* if the source location is not provided, default to the local timezone location
+* if the time specification is not provided, default to now
 
-Then push some code to main:
+### Meeting Planner
 
-1. Install [gonew](https://go.dev/blog/gonew) and run this command, replacing the last argument with the name of your new module:
+Plan meetings by printing a table of times in each location specified compared to UTC, centered around the current time.
+The columns of the table are: `UTC`, `Location_1 (UTC+N)`, `Location_2 (UTC+N)`, `Location_3 (UTC+n)` etc.
+The current time is shown by a horizontal line.
 
-    ```bash
-    gonew github.com/smlx/go-cli-github@main github.com/smlx/newproject
-    ```
 
-1. Create the git repo and push to `main` (which will become the default branch):
+```bash
+tz meeting Zürich Bangalore Tokyo
+```
 
-    ```bash
-    cd newproject
-    git init .
-    git branch -M main
-    git remote add origin git@github.com:smlx/newproject.git
-    git add .
-    git commit -am 'chore: create repository from template'
-    git push -u origin main
-    ```
-
-1. Create the `badges` branch for storing the README coverage badge.
-
-    ```bash
-    git checkout --orphan badges
-    git rm -rf .
-    rm -f .gitignore
-    echo 'This branch exists only to store the coverage badge in the README on `main`.' > README.md
-    git add README.md
-    git commit -m 'chore: initialize the badges branch'
-    git push origin badges
-    ```
-
-Then customize the code for your repository:
-
-1. Check out a new branch to set up the repo `git checkout -b setup main`
-
-1. Update the code for your project:
-
-    * rename `cmd/go-cli-github` to `cmd/$YOUR_COMMAND`
-    * update `.github/workflows/build.yaml`, replacing `go-cli-github` with `$YOUR_COMMAND`.
-    * update `.goreleaser.yaml` to build `cmd/$YOUR_COMMAND`
-    * update the links at the top of `README.md`
-    * update the contact email in `SECURITY.md`
-
-1. Commit and push:
-
-    ```bash
-    git add .
-    git commit -am 'chore: update template for new project'
-    git push -u origin setup
-    ```
-1. Open a PR, wait until all the checks go green, then merge the PR.
-
-Configure the repository:
-
-1. Go to repository Settings > General:
-
-    1. Releases
-
-        * Enable release immutability
-
-    1. Features
-
-        * Disable wiki and projects (unless you plan to use them!)
-
-    1. Pull Requests
-
-        * Allow merge commits only for Pull Requests
-        * Allow auto-merge
-        * Automatically delete head branches
-
-1. Go to repository Settings > Advanced Security, and enable:
-
-    * Private vulnerability reporting
-
-    * Dependabot
-
-        * Dependabot alerts
-        * Dependabot security updates
-        * Grouped security updates
-        * Dependabot on Actions runners
-
-    * Code Scanning
-
-        * CodeQL analysis > Set up > Default
-
-    * Secret Protection
-
-        * Push protection
-
-1. Go to repository Settings > Rules > Rulesets, and import the `protect-default-branch.json` ruleset.
-
-That's it.
-
-## How to contribute
-
-Issues are welcome.
-
-PRs are also welcome, but keep in mind that this is a very opinionated template, so not all changes will be accepted.
-PRs also need to ensure that test coverage remains high, and best practices are followed.
+This feature is inspired by [this web interface](https://www.timeanddate.com/worldclock/meetingtime.html).
