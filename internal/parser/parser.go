@@ -68,13 +68,20 @@ func Evaluate(timeSpec string, base time.Time) (time.Time, error) {
 	}
 	// if a weekday is specified, advance to it
 	if ast.Weekday != "" {
-		targetWeekday := parseWeekday(ast.Weekday)
-		if targetWeekday != -1 {
-			daysToAdd := int(targetWeekday) - int(result.Weekday())
-			if daysToAdd < 0 || (daysToAdd == 0 && result.Before(base)) {
-				daysToAdd += 7
+		switch ast.Weekday {
+		case "tomorrow":
+			result = result.AddDate(0, 0, 1)
+		case "yesterday":
+			result = result.AddDate(0, 0, -1)
+		default:
+			targetWeekday := parseWeekday(ast.Weekday)
+			if targetWeekday != -1 {
+				daysToAdd := int(targetWeekday) - int(result.Weekday())
+				if daysToAdd < 0 || (daysToAdd == 0 && result.Before(base)) {
+					daysToAdd += 7
+				}
+				result = result.AddDate(0, 0, daysToAdd)
 			}
-			result = result.AddDate(0, 0, daysToAdd)
 		}
 	}
 	return result, nil
