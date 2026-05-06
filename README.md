@@ -4,8 +4,8 @@
 
 ## Features
 
-Location names are fuzzy matched. So e.g. you can write "Zurich" or "Zürich".
-Only cities with a population of at least 100,000 are included.
+* Location names are fuzzy matched. So e.g. you can write "Zurich" or "Zürich".
+* Only cities with a population of at least 100,000 are included.
 
 Commands have aliases: `c` for `convert` and `m` for `meeting`.
 
@@ -33,8 +33,8 @@ tz c @ prague 5am
 ```
 
 The logic is:
+* the CLI structure is `tz convert [TARGET] [SOURCE] [TIME SPECIFICATION]`
 * `@` means "local time"
-* the CLI structure is `tz convert [TARGET] [SOURCE] [TIME SPECIFICATION]
 * if the source location is not provided, default to the local timezone location
 * if the time specification is not provided, default to now
 
