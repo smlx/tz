@@ -8,8 +8,8 @@ import (
 // CLI represents the command-line interface.
 type CLI struct {
 	Version VersionCmd `kong:"cmd,help='Print version information'"`
-	Convert ConvertCmd `kong:"cmd,help='Convert from one timezone to another'"`
-	Meeting MeetingCmd `kong:"cmd,help='Plan meetings across timezones'"`
+	Convert ConvertCmd `kong:"cmd,aliases='c',help='Convert from one timezone to another'"`
+	Meeting MeetingCmd `kong:"cmd,aliases='m',help='Plan meetings across timezones'"`
 }
 
 func main() {

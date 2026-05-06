@@ -17,6 +17,7 @@ func TestFind(t *testing.T) {
 		{"fuzzy match sydney", "sydney", "Australia/Sydney"},
 		{"fuzzy match richmond,ca", "richmond,ca", "America/Vancouver"},
 		{"fuzzy match richmond,va", "richmond,va", "America/New_York"},
+		{"fuzzy match london", "london", "Europe/London"},
 		{"local time", "@", "Local"},
 	}
 	for _, tt := range tests {

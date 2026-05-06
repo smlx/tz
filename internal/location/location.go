@@ -4,6 +4,7 @@ import (
 	"bytes"
 	_ "embed"
 	"errors"
+	"strconv"
 	"strings"
 	"time"
 	"unicode"
@@ -16,6 +17,7 @@ import (
 type LocData struct {
 	IANAName     string
 	OriginalName string
+	Population   int
 }
 
 var (
@@ -42,13 +44,14 @@ func init() {
 		}
 		// extract TSV fields
 		parts := bytes.Split(line, []byte{'\t'})
-		if len(parts) < 4 {
+		if len(parts) < 5 {
 			continue
 		}
 		cityName := string(parts[0])
 		countryCode := string(parts[1])
 		stateCode := string(parts[2])
-		ianaName := string(parts[3])
+		population, _ := strconv.Atoi(string(parts[3]))
+		ianaName := string(parts[4])
 		// normalize city name for consistent searching
 		normalized := normalizeString(cityName)
 		// build searchable keys (city name only, city+country, city+state)
@@ -63,10 +66,12 @@ func init() {
 		}
 		// populate the index, mapping each key to the IANA timezone data
 		for _, k := range keys {
-			if _, exists := index[k]; !exists {
+			existing, exists := index[k]
+			if !exists || population > existing.Population {
 				index[k] = LocData{
 					IANAName:     ianaName,
 					OriginalName: cityName,
+					Population:   population,
 				}
 			}
 		}
@@ -161,16 +166,21 @@ func Find(name string) (*time.Location, string, error) {
 	}
 	// fuzzy match
 	bestMatch := ""
-	bestDist := -1
+	bestDist := 100
 	for key := range index {
 		dist := distance(normalized, key)
-		if bestDist == -1 || dist < bestDist {
+		if dist < bestDist {
 			bestDist = dist
 			bestMatch = key
 		} else if dist == bestDist {
-			// break ties deterministically by choosing the alphabetically smaller key
-			if key < bestMatch {
+			// break ties by preferring the higher population
+			if index[key].Population > index[bestMatch].Population {
 				bestMatch = key
+			} else if index[key].Population == index[bestMatch].Population {
+				// break ties deterministically by choosing the alphabetically smaller key
+				if key < bestMatch {
+					bestMatch = key
+				}
 			}
 		}
 	}
