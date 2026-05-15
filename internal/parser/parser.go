@@ -46,6 +46,18 @@ func Evaluate(timeSpec string, base time.Time) (time.Time, error) {
 	if strings.TrimSpace(timeSpec) == "" || timeSpec == "@" {
 		return base, nil
 	}
+	layouts := []string{
+		time.RFC3339Nano,
+		time.RFC3339,
+		time.DateTime,
+		"2006-01-02 15:04",
+		time.DateOnly,
+	}
+	for _, layout := range layouts {
+		if parsedTime, err := time.ParseInLocation(layout, timeSpec, base.Location()); err == nil {
+			return parsedTime, nil
+		}
+	}
 	ast, err := timeParser.ParseString("", strings.ToLower(timeSpec))
 	if err != nil {
 		return base, err

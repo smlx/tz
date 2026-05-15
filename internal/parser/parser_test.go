@@ -16,13 +16,15 @@ func TestEvaluate(t *testing.T) {
 	}{
 		{"empty", "", base},
 		{"at", "@", base},
-		{"5am", "5am", time.Date(2023, 10, 26, 5, 0, 0, 0, loc)},                      // tomorrow 5am
-		{"15:00", "15:00", time.Date(2023, 10, 25, 15, 0, 0, 0, loc)},                 // today 3pm
-		{"5am friday", "5am friday", time.Date(2023, 10, 27, 5, 0, 0, 0, loc)},        // this coming friday
-		{"5am tomorrow", "5am tomorrow", time.Date(2023, 10, 26, 5, 0, 0, 0, loc)},    // thursday 5am
-		{"11am tomorrow", "11am tomorrow", time.Date(2023, 10, 26, 11, 0, 0, 0, loc)}, // thursday 11am
-		{"5pm yesterday", "5pm yesterday", time.Date(2023, 10, 24, 17, 0, 0, 0, loc)}, // tuesday 5pm
-		{"friday", "friday", time.Date(2023, 10, 27, 10, 0, 0, 0, loc)},               // this coming friday at current time
+		{"5am", "5am", time.Date(2023, 10, 26, 5, 0, 0, 0, loc)},                                 // tomorrow 5am
+		{"15:00", "15:00", time.Date(2023, 10, 25, 15, 0, 0, 0, loc)},                            // today 3pm
+		{"5am friday", "5am friday", time.Date(2023, 10, 27, 5, 0, 0, 0, loc)},                   // this coming friday
+		{"5am tomorrow", "5am tomorrow", time.Date(2023, 10, 26, 5, 0, 0, 0, loc)},               // thursday 5am
+		{"11am tomorrow", "11am tomorrow", time.Date(2023, 10, 26, 11, 0, 0, 0, loc)},            // thursday 11am
+		{"5pm yesterday", "5pm yesterday", time.Date(2023, 10, 24, 17, 0, 0, 0, loc)},            // tuesday 5pm
+		{"friday", "friday", time.Date(2023, 10, 27, 10, 0, 0, 0, loc)},                          // this coming friday at current time
+		{"2026-05-11 11:29", "2026-05-11 11:29", time.Date(2026, 05, 11, 11, 29, 0, 0, loc)},     // ISO timestamp min
+		{"2026-05-11 11:29", "2026-05-11 11:29:23", time.Date(2026, 05, 11, 11, 29, 23, 0, loc)}, // ISO timestamp sec
 	}
 
 	for _, tt := range tests {
