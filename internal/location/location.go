@@ -4,6 +4,8 @@ import (
 	"bytes"
 	_ "embed"
 	"errors"
+	"fmt"
+	"regexp"
 	"strconv"
 	"strings"
 	"time"
@@ -25,6 +27,9 @@ var (
 	index map[string]LocData
 	//go:embed _data/cities.tsv
 	citiesData []byte
+
+	// offsetRegex matches common timezone shorthands and offsets
+	offsetRegex = regexp.MustCompile(`^(?i)(?:UTC|GMT)?\s*([+-]\d{1,4}(?::?\d{2})?)$`)
 )
 
 func normalizeString(s string) string {
@@ -157,6 +162,9 @@ func Find(name string) (*time.Location, string, error) {
 	if name == "" || name == "@" {
 		return time.Local, "Local", nil
 	}
+	if loc, zoneName, ok := parseShorthand(name); ok {
+		return loc, zoneName, nil
+	}
 	normalized := normalizeString(name)
 	normalized = strings.ReplaceAll(normalized, ", ", ",")
 	// exact match
@@ -193,4 +201,46 @@ func Find(name string) (*time.Location, string, error) {
 		return loc, data.OriginalName, err
 	}
 	return nil, "", errors.New("location not found")
+}
+
+// parseShorthand parses common timezone shorthands like UTC, UTC+8, +0800, -07:00
+func parseShorthand(name string) (*time.Location, string, bool) {
+	if strings.ToUpper(name) == "UTC" || strings.ToUpper(name) == "GMT" {
+		return time.UTC, strings.ToUpper(name), true
+	}
+
+	m := offsetRegex.FindStringSubmatch(name)
+	if m == nil {
+		return nil, "", false
+	}
+
+	offsetStr := m[1]
+	sign := 1
+	if offsetStr[0] == '-' {
+		sign = -1
+	}
+	offsetStr = offsetStr[1:]
+	offsetStr = strings.ReplaceAll(offsetStr, ":", "")
+
+	var hours, mins int
+	switch {
+	case len(offsetStr) <= 2:
+		hours, _ = strconv.Atoi(offsetStr)
+	case len(offsetStr) == 3:
+		hours, _ = strconv.Atoi(offsetStr[:1])
+		mins, _ = strconv.Atoi(offsetStr[1:])
+	case len(offsetStr) == 4:
+		hours, _ = strconv.Atoi(offsetStr[:2])
+		mins, _ = strconv.Atoi(offsetStr[2:])
+	default:
+		return nil, "", false
+	}
+
+	offsetSecs := sign * ((hours * 3600) + (mins * 60))
+	zoneName := fmt.Sprintf("UTC%+03d:%02d", sign*hours, mins)
+	if mins == 0 {
+		zoneName = fmt.Sprintf("UTC%+d", sign*hours)
+	}
+
+	return time.FixedZone(zoneName, offsetSecs), zoneName, true
 }

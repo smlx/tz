@@ -5,7 +5,8 @@
 ## Features
 
 * Location names are fuzzy matched. So e.g. you can write "Zurich" or "Zürich".
-* Only cities with a population of at least 100,000 are included.
+    * Only cities with a population of at least 100,000 are included.
+* Common timezone shorthands and offsets are accepted (e.g. `UTC`, `UTC+8`, `+0800`, `-07:00`).
 
 Commands have aliases: `c` for `convert` and `m` for `meeting`.
 
