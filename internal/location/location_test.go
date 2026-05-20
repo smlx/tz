@@ -19,6 +19,12 @@ func TestFind(t *testing.T) {
 		{"fuzzy match richmond,va", "richmond,va", "America/New_York"},
 		{"fuzzy match london", "london", "Europe/London"},
 		{"local time", "@", "Local"},
+		{"shorthand UTC", "UTC", "UTC"},
+		{"shorthand UTC+8", "UTC+8", "UTC+8"},
+		{"shorthand +0800", "+0800", "UTC+8"},
+		{"shorthand -07:00", "-07:00", "UTC-7"},
+		{"shorthand UTC-07:00", "UTC-07:00", "UTC-7"},
+		{"shorthand GMT-7", "GMT-7", "UTC-7"},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
