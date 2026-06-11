@@ -26,7 +26,7 @@ func TestConvert(t *testing.T) {
 			target:   "Zurich",
 			source:   "@",
 			timeSpec: []string{},
-			expected: "Zürich (Europe/Zurich CEST UTC+2)\nWed, 25 Oct 2023 12:00:00 CEST",
+			expected: "Local (UTC UTC UTC+0)\nWed, 25 Oct 2023 10:00:00 UTC\n\nZürich (Europe/Zurich CEST UTC+2)\nWed, 25 Oct 2023 12:00:00 CEST",
 		},
 		{
 			name:     "source to target now",
@@ -35,7 +35,7 @@ func TestConvert(t *testing.T) {
 			timeSpec: []string{},
 			// Bangalore (IST) is UTC+5:30. At 10:00 UTC, it's 15:30 IST.
 			// Tokyo (JST) is UTC+9. At 10:00 UTC, it's 19:00 JST.
-			expected: "Tokyo (Asia/Tokyo JST UTC+9)\nWed, 25 Oct 2023 19:00:00 JST",
+			expected: "Bengaluru (Asia/Kolkata IST UTC+5:30)\nWed, 25 Oct 2023 15:30:00 IST\n\nTokyo (Asia/Tokyo JST UTC+9)\nWed, 25 Oct 2023 19:00:00 JST",
 		},
 		{
 			name:     "source to target with time",
@@ -45,7 +45,7 @@ func TestConvert(t *testing.T) {
 			// base is 10:00 UTC -> 21:00 AEDT in Sydney.
 			// Next 5am in Sydney is 2023-10-26 05:00:00 AEDT -> 2023-10-25 18:00:00 UTC
 			// 18:00 UTC in Zurich (CEST, UTC+2) is 20:00 CEST.
-			expected: "Zürich (Europe/Zurich CEST UTC+2)\nWed, 25 Oct 2023 20:00:00 CEST",
+			expected: "Sydney (Australia/Sydney AEDT UTC+11)\nThu, 26 Oct 2023 05:00:00 AEDT\n\nZürich (Europe/Zurich CEST UTC+2)\nWed, 25 Oct 2023 20:00:00 CEST",
 		},
 	}
 

@@ -20,6 +20,9 @@ Examples:
 # print the current time and timezone in Zürich
 tz c zurich
 # Output:
+# Local (AWST UTC+8)
+# Wed, 06 May 2026 10:44:20 AWST
+#
 # Zürich (Europe/Zurich CEST UTC+2)
 # Wed, 06 May 2026 04:44:20 CEST
 
