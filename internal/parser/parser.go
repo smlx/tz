@@ -66,12 +66,17 @@ func Evaluate(timeSpec string, base time.Time) (time.Time, error) {
 	// if a time is specified
 	if ast.Time != nil {
 		hour := ast.Time.Hour
+		minute := ast.Time.Minute
+		if minute == 0 && hour > 24 && hour < 2400 {
+			minute = hour % 100
+			hour /= 100
+		}
 		if ast.Time.AMPM == "pm" && hour < 12 {
 			hour += 12
 		} else if ast.Time.AMPM == "am" && hour == 12 {
 			hour = 0
 		}
-		result = time.Date(result.Year(), result.Month(), result.Day(), hour, ast.Time.Minute, 0, 0, result.Location())
+		result = time.Date(result.Year(), result.Month(), result.Day(), hour, minute, 0, 0, result.Location())
 		// if the parsed time is before the current time and no weekday is
 		// specified, advance to tomorrow
 		if ast.Weekday == "" && result.Before(base) {
