@@ -25,6 +25,8 @@ func TestFind(t *testing.T) {
 		{"shorthand -07:00", "-07:00", "UTC-7"},
 		{"shorthand UTC-07:00", "UTC-07:00", "UTC-7"},
 		{"shorthand GMT-7", "GMT-7", "UTC-7"},
+		{"shorthand CEST", "CEST", "CEST"},
+		{"shorthand PST", "PST", "PST"},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

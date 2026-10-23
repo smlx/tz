@@ -25,6 +25,11 @@ func TestEvaluate(t *testing.T) {
 		{"friday", "friday", time.Date(2023, 10, 27, 10, 0, 0, 0, loc)},                          // this coming friday at current time
 		{"2026-05-11 11:29", "2026-05-11 11:29", time.Date(2026, 05, 11, 11, 29, 0, 0, loc)},     // ISO timestamp min
 		{"2026-05-11 11:29", "2026-05-11 11:29:23", time.Date(2026, 05, 11, 11, 29, 23, 0, loc)}, // ISO timestamp sec
+		{
+			"Thursday, October 22, 17:00 CEST",
+			"Thursday, October 22, 17:00 CEST",
+			time.Date(2023, 10, 22, 17, 0, 0, 0, time.FixedZone("CEST", 2*3600)),
+		},
 	}
 
 	for _, tt := range tests {
