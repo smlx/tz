@@ -32,23 +32,29 @@ func formatOutput(name string, t time.Time) string {
 
 // Convert performs timezone conversion based on target, source, and time specification.
 func Convert(target, source string, timeSpec []string, now time.Time) (string, error) {
-	// resolve source
-	var sourceLoc *time.Location
-	var sourceName string
-	var err error
-	if source == "" || source == "@" {
-		sourceLoc = time.Local
-		sourceName = "Local"
-	} else {
-		sourceLoc, sourceName, err = location.Find(source)
-		if err != nil {
-			return "", fmt.Errorf("failed to find source location: %w", err)
+	// Check if all arguments together form a valid time specification, which
+	// means target and source were omitted (defaulting to local time).
+	var fullArgs []string
+	if target != "" {
+		fullArgs = append(fullArgs, target)
+	}
+	if source != "" {
+		fullArgs = append(fullArgs, source)
+	}
+	fullArgs = append(fullArgs, timeSpec...)
+	if len(fullArgs) > 0 {
+		fullSpec := strings.Join(fullArgs, " ")
+		if _, parseErr := parser.Evaluate(fullSpec, now.In(time.Local)); parseErr == nil {
+			target = "@"
+			source = "@"
+			timeSpec = fullArgs
 		}
 	}
 
 	// resolve target
 	var targetLoc *time.Location
 	var targetName string
+	var err error
 	if target == "" || target == "@" {
 		targetLoc = time.Local
 		targetName = "Local"
@@ -59,12 +65,38 @@ func Convert(target, source string, timeSpec []string, now time.Time) (string, e
 		}
 	}
 
+	// resolve source
+	var sourceLoc *time.Location
+	var sourceName string
+	if source == "" || source == "@" {
+		sourceLoc = time.Local
+		sourceName = "Local"
+	} else {
+		// Check if source + timeSpec forms a valid time specification first,
+		// before matching source as a location name.
+		fullSpec := strings.Join(append([]string{source}, timeSpec...), " ")
+		if _, parseErr := parser.Evaluate(fullSpec, now.In(time.Local)); parseErr == nil {
+			sourceLoc = time.Local
+			sourceName = "Local"
+			timeSpec = append([]string{source}, timeSpec...)
+			source = "@"
+		} else {
+			sourceLoc, sourceName, err = location.Find(source)
+			if err != nil {
+				return "", fmt.Errorf("failed to find source location: %w", err)
+			}
+		}
+	}
+
 	// parse time specification
 	specStr := strings.Join(timeSpec, " ")
 	baseTime := now.In(sourceLoc)
 	parsedTime, err := parser.Evaluate(specStr, baseTime)
 	if err != nil {
 		return "", fmt.Errorf("failed to parse time specification: %w", err)
+	}
+	if (source == "" || source == "@") && parsedTime.Location() != sourceLoc {
+		sourceName = parsedTime.Location().String()
 	}
 
 	// convert time spec to target time zone

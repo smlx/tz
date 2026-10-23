@@ -27,19 +27,21 @@ tz c zurich
 # Wed, 06 May 2026 04:44:20 CEST
 
 # print the time and timezone in Poznań when it is 5am local time (the next time it is 5am local time)
-tz c poznan @ 5am
+tz c poznan 5am
 # print the time and timezone in Zürich when it is 5am in Sydney (the next time it is 5am in Sydney)
 tz c Zurich Sydney 5am
 # print the time and timezone in Tokyo when it is 5am on Friday in London (the next time it is 5am on Friday in London)
 tz c Tokyo London 5am friday
 # print the time and timezone local time when it is 5am in Prague (the next time it is 5am in Prague)
 tz c @ prague 5am
+# convert a date and time with timezone to local time
+tz c "Thursday, October 22, 17:00 CEST"
 ```
 
 The logic is:
 * the CLI structure is `tz convert [TARGET] [SOURCE] [TIME SPECIFICATION]`
 * `@` means "local time"
-* if the source location is not provided, default to the local timezone location
+* if the target or source location is not provided, default to the local timezone location
 * if the time specification is not provided, default to now
 
 ### Meeting Planner

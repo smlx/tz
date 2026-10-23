@@ -47,6 +47,20 @@ func TestConvert(t *testing.T) {
 			// 18:00 UTC in Zurich (CEST, UTC+2) is 20:00 CEST.
 			expected: "Sydney (Australia/Sydney AEDT UTC+11)\nThu, 26 Oct 2023 05:00:00 AEDT\n\nZürich (Europe/Zurich CEST UTC+2)\nWed, 25 Oct 2023 20:00:00 CEST",
 		},
+		{
+			name:     "target with full date time and timezone",
+			target:   "Tokyo",
+			source:   "Thursday,",
+			timeSpec: []string{"October", "22,", "17:00", "CEST"},
+			expected: "CEST (CEST CEST UTC+2)\nSun, 22 Oct 2023 17:00:00 CEST\n\nTokyo (Asia/Tokyo JST UTC+9)\nMon, 23 Oct 2023 00:00:00 JST",
+		},
+		{
+			name:     "local target with full date time and timezone",
+			target:   "Thursday,",
+			source:   "October",
+			timeSpec: []string{"22,", "17:00", "CEST"},
+			expected: "CEST (CEST CEST UTC+2)\nSun, 22 Oct 2023 17:00:00 CEST\n\nLocal (UTC UTC UTC+0)\nSun, 22 Oct 2023 15:00:00 UTC",
+		},
 	}
 
 	for _, tt := range tests {

@@ -1,11 +1,13 @@
 package parser
 
 import (
+	"fmt"
 	"strings"
 	"time"
 
 	"github.com/alecthomas/participle/v2"
 	"github.com/alecthomas/participle/v2/lexer"
+	"github.com/smlx/tz/internal/location"
 )
 
 // TimeSpecAST represents the parsed abstract syntax tree of a time
@@ -52,10 +54,46 @@ func Evaluate(timeSpec string, base time.Time) (time.Time, error) {
 		time.DateTime,
 		"2006-01-02 15:04",
 		time.DateOnly,
+		"Monday, January 2, 15:04 MST",
+		"Monday, January 2, 15:04",
+		"Mon, January 2, 15:04 MST",
+		"Mon, January 2, 15:04",
+		"Monday, Jan 2, 15:04 MST",
+		"Monday, Jan 2, 15:04",
+		"Mon, Jan 2, 15:04 MST",
+		"Mon, Jan 2, 15:04",
+		"January 2, 15:04 MST",
+		"January 2, 15:04",
+		"Jan 2, 15:04 MST",
+		"Jan 2, 15:04",
 	}
 	for _, layout := range layouts {
-		if parsedTime, err := time.ParseInLocation(layout, timeSpec, base.Location()); err == nil {
-			return parsedTime, nil
+		if parsedTime, err := time.ParseInLocation(
+			layout,
+			timeSpec,
+			base.Location(),
+		); err == nil {
+			loc := parsedTime.Location()
+			if zone, offset := parsedTime.Zone(); offset == 0 && zone != "" &&
+				zone != "UTC" && zone != "GMT" {
+				if resolvedLoc, _, err := location.Find(zone); err == nil {
+					loc = resolvedLoc
+				}
+			}
+			year := parsedTime.Year()
+			if year == 0 {
+				year = base.Year()
+			}
+			return time.Date(
+				year,
+				parsedTime.Month(),
+				parsedTime.Day(),
+				parsedTime.Hour(),
+				parsedTime.Minute(),
+				parsedTime.Second(),
+				parsedTime.Nanosecond(),
+				loc,
+			), nil
 		}
 	}
 	ast, err := timeParser.ParseString("", strings.ToLower(timeSpec))
@@ -71,10 +109,22 @@ func Evaluate(timeSpec string, base time.Time) (time.Time, error) {
 			minute = hour % 100
 			hour /= 100
 		}
-		if ast.Time.AMPM == "pm" && hour < 12 {
-			hour += 12
-		} else if ast.Time.AMPM == "am" && hour == 12 {
-			hour = 0
+		switch ast.Time.AMPM {
+		case "pm":
+			if hour < 12 {
+				hour += 12
+			}
+		case "am":
+			if hour == 12 {
+				hour = 0
+			}
+		case "":
+		default:
+			if ast.Weekday == "" {
+				ast.Weekday = ast.Time.AMPM
+			} else {
+				return base, fmt.Errorf("unrecognized am/pm modifier: %s", ast.Time.AMPM)
+			}
 		}
 		result = time.Date(result.Year(), result.Month(), result.Day(), hour, minute, 0, 0, result.Location())
 		// if the parsed time is before the current time and no weekday is
@@ -92,13 +142,14 @@ func Evaluate(timeSpec string, base time.Time) (time.Time, error) {
 			result = result.AddDate(0, 0, -1)
 		default:
 			targetWeekday := parseWeekday(ast.Weekday)
-			if targetWeekday != -1 {
-				daysToAdd := int(targetWeekday) - int(result.Weekday())
-				if daysToAdd < 0 || (daysToAdd == 0 && result.Before(base)) {
-					daysToAdd += 7
-				}
-				result = result.AddDate(0, 0, daysToAdd)
+			if targetWeekday == -1 {
+				return base, fmt.Errorf("unrecognized weekday: %s", ast.Weekday)
 			}
+			daysToAdd := int(targetWeekday) - int(result.Weekday())
+			if daysToAdd < 0 || (daysToAdd == 0 && result.Before(base)) {
+				daysToAdd += 7
+			}
+			result = result.AddDate(0, 0, daysToAdd)
 		}
 	}
 	return result, nil
